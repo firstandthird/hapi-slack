@@ -7,7 +7,6 @@ exports.register = (server, config, next) => {
   const url = urlParse(config.slackHook);
   const baseUrl = `${url.protocol}//${url.hostname}`;
   const path = url.pathname;
-  console.log(`will forward messages to ${baseUrl} and path ${path}`);
   const postMessageToSlack = (tags, data) => {
     const text = `[${_.keys(tags)}] ${data}`;
     Wreck.request('POST', path, {
