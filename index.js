@@ -17,7 +17,7 @@ exports.register = (server, config, next) => {
       payload: JSON.stringify(obj)
     });
   };
-
+  server.methods.postMessageToSlack = postMessageToSlack;
   // event that fires whenever server.log is called:
   server.on('log', (event, tags) => {
     if (_.intersection(_.keys(tags), config.tags).length > 0) {
