@@ -4,9 +4,6 @@ const Wreck = require('wreck');
 const urlParse = require('url-parse');
 
 exports.register = (server, config, next) => {
-  const url = urlParse(config.slackHook);
-  const baseUrl = `${url.protocol}//${url.hostname}`;
-  const path = url.pathname;
   const postMessageToSlack = (tags, data) => {
     const text = `[${_.keys(tags)}] ${data}`;
     const obj = {
@@ -15,14 +12,9 @@ exports.register = (server, config, next) => {
     if (config.channel) {
       obj["channel"] = config.channel;
     }
-    console.log(obj)
-    Wreck.request('POST', path, {
-      baseUrl : baseUrl,
+    Wreck.request('POST', config.slackHook, {
       headers: { 'Content-type': 'application/json' },
-      payload: JSON.stringify({
-        "text": text,
-        "channel": config.channel
-      })
+      payload: JSON.stringify(obj)
     });
   };
 
