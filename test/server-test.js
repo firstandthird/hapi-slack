@@ -9,6 +9,7 @@ let server;
 
 const options = {
   slackHook: 'https://hooks.slack.com/services/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',
+  channel: '#hapi-slack-test',
   tags: ['warning', 'error', 'test']
 }
 
@@ -31,7 +32,7 @@ lab.afterEach((done) => {
 
 lab.test('posts to test slack channel ', (done) => {
   try {
-    server.log(['warning', 'error'], 'this is a test post that should be posted to the channel');
+    server.log(['warning', 'error'], 'this is a test post from hapi-slack.  Just ignore it.');
   } catch (e) {
     console.log(e)
   } finally {

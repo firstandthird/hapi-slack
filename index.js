@@ -9,10 +9,20 @@ exports.register = (server, config, next) => {
   const path = url.pathname;
   const postMessageToSlack = (tags, data) => {
     const text = `[${_.keys(tags)}] ${data}`;
+    const obj = {
+      "text" : text
+    };
+    if (config.channel) {
+      obj["channel"] = config.channel;
+    }
+    console.log(obj)
     Wreck.request('POST', path, {
       baseUrl : baseUrl,
       headers: { 'Content-type': 'application/json' },
-      payload: JSON.stringify({ text })
+      payload: JSON.stringify({
+        "text": text,
+        "channel": config.channel
+      })
     });
   };
 
