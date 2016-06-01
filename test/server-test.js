@@ -9,6 +9,7 @@ let server;
 
 const options = {
   slackHook: 'https://hooks.slack.com/services/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',
+  channel: '#hapi-slack-test',
   tags: ['warning', 'error', 'test']
 }
 
@@ -28,15 +29,14 @@ lab.afterEach((done) => {
     done();
   });
 });
-
 lab.test('posts to test slack channel ', (done) => {
   try {
-    server.log(['warning', 'error'], 'this is a test post that should be posted to the channel');
+    server.log(['warning', 'error'], 'this is a test post from hapi-slack.  Just ignore it.');
   } catch (e) {
     console.log(e)
   } finally {
   }
-  _.delay(done, 5000)
+  _.delay(done, 2000)
 });
 lab.test('does not post when tags do not match ', (done) => {
   try {
@@ -45,5 +45,9 @@ lab.test('does not post when tags do not match ', (done) => {
     console.log(e)
   } finally {
   }
-  _.delay(done, 5000)
+  _.delay(done, 2000)
+});
+lab.test('lets you call the post method manually', (done) => {
+  server.methods.postMessageToSlack(['test', 'postMessageToSlack'], 'testing server.method.postMessageToSlack.  Just ignore this.');
+  done();
 });
