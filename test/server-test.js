@@ -8,10 +8,14 @@ const _ = require('lodash');
 let server;
 
 const options = {
-  slackHook: 'https://hooks.slack.com/services/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',
+  // you will need to provide your own slack webhook here (see https://api.slack.com/incoming-webhooks)
+  // your slack webhook will look something like 'https://hooks.slack.com/services/1234/5678/abcdef',
+  slackHook: process.env.SLACK_WEBHOOK,
+  // you can provide a name for any channel allowed by the above slack webhook:
   channel: '#hapi-slack-test',
+  // you can list which tags will cause a server.log call to post to slack:
   tags: ['warning', 'error', 'test']
-}
+};
 
 lab.beforeEach((done) => {
   server = new Hapi.Server({});
@@ -39,15 +43,14 @@ lab.test('posts to test slack channel ', (done) => {
   _.delay(done, 2000)
 });
 lab.test('does not post when tags do not match ', (done) => {
-  try {
-    server.log(['asdf', 'asdf'], 'this should not be posted to the channel');
-  } catch (e) {
-    console.log(e)
-  } finally {
-  }
+  server.log(['asdf', 'asdf'], 'this should not be posted to the channel');
   _.delay(done, 2000)
 });
 lab.test('lets you call the post method manually', (done) => {
   server.methods.postMessageToSlack(['test', 'postMessageToSlack'], 'testing server.method.postMessageToSlack.  Just ignore this.');
   done();
+});
+lab.test('lets you post an object as the message', (done) => {
+  server.log(['error'], { text: 'message is object' });
+  _.delay(done, 2000)
 });
