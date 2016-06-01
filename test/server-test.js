@@ -36,7 +36,6 @@ lab.afterEach((done) => {
 lab.test('posts to test slack channel ', (done) => {
   server.log(['test'], 'this is a simple test post from hapi-slack.');
 });
-/*
 lab.test('posts to test slack channel with color ', (done) => {
   server.log(['error', 'test'], 'this is a simple test post from hapi-slack that should have red next to it.');
 });
@@ -68,4 +67,3 @@ lab.test('lets you call the raw post method manually', (done) => {
 lab.test('will not process tags that have "hapi-slack"', (done) => {
   server.log(['hapi-slack', 'error'], 'this should not be posted to the channel');
 });
-*/
