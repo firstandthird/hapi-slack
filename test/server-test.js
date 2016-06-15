@@ -14,7 +14,10 @@ const options = {
   // you can list which tags will cause a server.log call to post to slack:
   tags: ['warning', 'error', 'success', 'test'],
   // you can specify tags that will automatically be appended to each post to slack:
-  additionalTags: ['server-test.js', 'someAdditionalTag']
+  additionalTags: ['server-test.js', 'someAdditionalTag'],
+  internalErrors: true,
+  // icon_url: 'http://i.ytimg.com/vi/l7iZDCSUi1M/hqdefault.jpg'
+  icon_url: 'http://static.squarespace.com/static/531f2c4ee4b002f5b011bf00/t/536bdcefe4b03580f8f6bb16/1399577848961/hbosiliconvalleypiedpiperoldlogo'
 };
 
 lab.beforeEach((done) => {
@@ -55,15 +58,55 @@ lab.test('lets you post an object with a special "message" field', (done) => {
   server.log(['error'], { message: 'this is the message that was pulled out of the object below', data: 'this is an object and should be formatted' });
 });
 lab.test('does not post when tags do not match ', (done) => {
-server.log(['asdf', 'asdf'], 'this should not be posted to the channel');
+  server.log(['asdf', 'asdf'], 'this should not be posted to the channel');
 });
 lab.test('lets you call the post method manually', (done) => {
-  server.methods.postMessageToSlack(['test', 'postMessageToSlack'], 'this is a test of server.method.postMessageToSlack. ');
+  server.postMessageToSlack(['test', 'postMessageToSlack'], 'this is a test of server.postMessageToSlack. ');
 });
 lab.test('lets you call the raw post method manually', (done) => {
-  server.methods.postRawDataToSlack({ text: 'this is a test of server.method.postRawDataToSlack .' });
+  server.postRawDataToSlack({ text: 'this is a test of server.postRawDataToSlack .' });
 });
-
 lab.test('will not process tags that have "hapi-slack"', (done) => {
   server.log(['hapi-slack', 'error'], 'this should not be posted to the channel');
+});
+lab.test('will not process tags when noTags option is true', (done) => {
+  server.stop( () => {
+    options.noTags = true;
+    server = new Hapi.Server({});
+    server.connection({ port: 8080 });
+    server.register({
+      register: hapiSlack,
+      options
+    }, () => {
+      server.log(['warning', 'error'], 'this should be posted without tags to the channel');
+    });
+  });
+});
+lab.test('will user a supplied username', (done) => {
+  server.stop( () => {
+    delete options.noTags;
+    options.username = "Jared";
+    server = new Hapi.Server({});
+    server.connection({ port: 8080 });
+    server.register({
+      register: hapiSlack,
+      options
+    }, () => {
+      server.log(['warning', 'error'], 'this should be posted with the username Jared');
+    });
+  });
+});
+lab.test('internalErrors will return an appropriate error ', (done) => {
+  server.route({
+    path: '/',
+    method: 'GET',
+    handler: () => {
+      thisShouldGenerateAnInteralErrorOnSlack.youCanReferTo = 42;
+    }
+  });
+  server.inject({
+    url: '/',
+    method: 'GET'
+  }, (response) => {
+  });
 });

@@ -4,7 +4,7 @@ const Wreck = require('wreck');
 
 exports.register = (server, config, next) => {
   // sends a payload string to slack:
-  const doPost = (slackPayload) => {
+  const postToSlack = (slackPayload) => {
     if (_.isObject(slackPayload)) {
       slackPayload = JSON.stringify(slackPayload);
     }
@@ -22,32 +22,59 @@ exports.register = (server, config, next) => {
   const makeSlackPayload = (tags, data) => {
     let slackPayload = {};
     if (_.isString(data)) {
-      slackPayload = {
-        attachments: [{
-          text: `${data} [${tags}] `
-        }]
-      };
+      if (config.noTags) {
+        slackPayload = {
+          attachments: [{
+            text: data
+          }]
+        };
+      } else {
+        slackPayload = {
+          attachments: [{
+            text: `${data} [${tags}] `
+          }]
+        };
+      }
     } else if (_.isObject(data)) {
       // if it's a json object then format it so
       // it displays all nicely on slack:
       if (!data.message) {
-        // slack uses ``` to format text like an object:
-        slackPayload = {
-          attachments: [{
-            text: ` [${tags}] \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-            mrkdwn_in: ['text']
-          }]
-        };
+        if (config.noTags) {
+          // slack uses ``` to format text like an object:
+          slackPayload = {
+            attachments: [{
+              text: ` \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
+              mrkdwn_in: ['text']
+            }]
+          };
+        } else {
+          // slack uses ``` to format text like an object:
+          slackPayload = {
+            attachments: [{
+              text: ` [${tags}] \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
+              mrkdwn_in: ['text']
+            }]
+          };
+        }
       // if it's a json object that has a 'message' field then pull that out:
       } else {
         const message = data.message;
         delete data.message;
-        slackPayload = {
-          attachments: [{
-            text: `${message} [${tags}] \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-            mrkdwn_in: ['text']
-          }]
-        };
+        if (config.noTags) {
+          slackPayload = {
+            attachments: [{
+              text: `${message} \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
+              mrkdwn_in: ['text']
+            }]
+          };
+        } else {
+          slackPayload = {
+            attachments: [{
+              text: `${message} [${tags}] \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
+              mrkdwn_in: ['text']
+            }]
+          };
+        }
       }
     }
     // set any colors for special tags:
@@ -64,10 +91,16 @@ exports.register = (server, config, next) => {
     if (config.channel) {
       slackPayload.channel = config.channel;
     }
+    if (config.icon_url) {
+      slackPayload.icon_url = config.icon_url;
+    }
+    if (config.username) {
+      slackPayload.username = config.username;
+    }
     return JSON.stringify(slackPayload);
   };
 
-  // will format and doPost a server.log style message to slack:
+  // will format and postToSlack a server.log style message to slack:
   const postMessageToSlack = (tags, data) => {
     let slackPayload;
     // when called directly, tags is just an array:
@@ -78,7 +111,7 @@ exports.register = (server, config, next) => {
     } else if (_.isObject(tags)) {
       slackPayload = makeSlackPayload(_.union(_.keys(tags), config.additionalTags).join(', '), data);
     }
-    doPost(slackPayload);
+    postToSlack(slackPayload);
   };
 
   // event that fires whenever server.log is called:
@@ -94,9 +127,14 @@ exports.register = (server, config, next) => {
       }
     });
   }
+  if (config.internalErrors) {
+    server.on('request-error', (request, err) => {
+      postMessageToSlack(['internal-error', 'error'], err.toString());
+    });
+  }
   // both methods are available for you to manually call:
-  server.methods.postMessageToSlack = postMessageToSlack;
-  server.methods.postRawDataToSlack = doPost;
+  server.decorate('server', 'postMessageToSlack', postMessageToSlack);
+  server.decorate('server', 'postToSlack', postToSlack);
   next();
 };
 
