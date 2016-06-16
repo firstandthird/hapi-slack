@@ -4,7 +4,7 @@ const Wreck = require('wreck');
 
 exports.register = (server, config, next) => {
   // sends a payload string to slack:
-  const postToSlack = (slackPayload) => {
+  const slackPostRawMessage = (slackPayload) => {
     if (_.isObject(slackPayload)) {
       slackPayload = JSON.stringify(slackPayload);
     }
@@ -18,63 +18,40 @@ exports.register = (server, config, next) => {
     });
   };
 
-  // used by postMessageToSlack to construct a nice payload:
+  // used by slackPostMessage to construct a nice payload:
   const makeSlackPayload = (tags, data) => {
+    let tagString = `[${tags}]`;
+    if (config.noTags) {
+      tagString = '';
+    }
     let slackPayload = {};
     if (_.isString(data)) {
-      if (config.noTags) {
-        slackPayload = {
-          attachments: [{
-            text: data
-          }]
-        };
-      } else {
-        slackPayload = {
-          attachments: [{
-            text: `${data} [${tags}] `
-          }]
-        };
-      }
+      slackPayload = {
+        attachments: [{
+          text: `${data} ${tagString} `
+        }]
+      };
     } else if (_.isObject(data)) {
       // if it's a json object then format it so
       // it displays all nicely on slack:
       if (!data.message) {
-        if (config.noTags) {
           // slack uses ``` to format text like an object:
-          slackPayload = {
-            attachments: [{
-              text: ` \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-              mrkdwn_in: ['text']
-            }]
-          };
-        } else {
-          // slack uses ``` to format text like an object:
-          slackPayload = {
-            attachments: [{
-              text: ` [${tags}] \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-              mrkdwn_in: ['text']
-            }]
-          };
-        }
+        slackPayload = {
+          attachments: [{
+            text: ` ${tagString} \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
+            mrkdwn_in: ['text']
+          }]
+        };
       // if it's a json object that has a 'message' field then pull that out:
       } else {
         const message = data.message;
         delete data.message;
-        if (config.noTags) {
-          slackPayload = {
-            attachments: [{
-              text: `${message} \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-              mrkdwn_in: ['text']
-            }]
-          };
-        } else {
-          slackPayload = {
-            attachments: [{
-              text: `${message} [${tags}] \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-              mrkdwn_in: ['text']
-            }]
-          };
-        }
+        slackPayload = {
+          attachments: [{
+            text: `${message} ${tagString} \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
+            mrkdwn_in: ['text']
+          }]
+        };
       }
     }
     // set any colors for special tags:
@@ -91,8 +68,8 @@ exports.register = (server, config, next) => {
     if (config.channel) {
       slackPayload.channel = config.channel;
     }
-    if (config.icon_url) {
-      slackPayload.icon_url = config.icon_url;
+    if (config.iconURL) {
+      slackPayload.icon_url = config.iconURL;
     }
     if (config.username) {
       slackPayload.username = config.username;
@@ -100,8 +77,8 @@ exports.register = (server, config, next) => {
     return JSON.stringify(slackPayload);
   };
 
-  // will format and postToSlack a server.log style message to slack:
-  const postMessageToSlack = (tags, data) => {
+  // will format and slackPostRawMessage a server.log style message to slack:
+  const slackPostMessage = (tags, data) => {
     let slackPayload;
     // when called directly, tags is just an array:
     if (_.isArray(tags)) {
@@ -111,7 +88,7 @@ exports.register = (server, config, next) => {
     } else if (_.isObject(tags)) {
       slackPayload = makeSlackPayload(_.union(_.keys(tags), config.additionalTags).join(', '), data);
     }
-    postToSlack(slackPayload);
+    slackPostRawMessage(slackPayload);
   };
 
   // event that fires whenever server.log is called:
@@ -123,18 +100,18 @@ exports.register = (server, config, next) => {
         return;
       }
       if (_.intersection(_.keys(tags), config.tags).length > 0) {
-        postMessageToSlack(tags, event.data);
+        slackPostMessage(tags, event.data);
       }
     });
   }
   if (config.internalErrors) {
     server.on('request-error', (request, err) => {
-      postMessageToSlack(['internal-error', 'error'], err.toString());
+      slackPostMessage(['internal-error', 'error'], err.toString());
     });
   }
   // both methods are available for you to manually call:
-  server.decorate('server', 'postMessageToSlack', postMessageToSlack);
-  server.decorate('server', 'postToSlack', postToSlack);
+  server.decorate('server', 'slackPostMessage', slackPostMessage);
+  server.decorate('server', 'slackPostRawMessage', slackPostRawMessage);
   next();
 };
 

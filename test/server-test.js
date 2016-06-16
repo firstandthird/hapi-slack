@@ -16,8 +16,7 @@ const options = {
   // you can specify tags that will automatically be appended to each post to slack:
   additionalTags: ['server-test.js', 'someAdditionalTag'],
   internalErrors: true,
-  // icon_url: 'http://i.ytimg.com/vi/l7iZDCSUi1M/hqdefault.jpg'
-  icon_url: 'http://static.squarespace.com/static/531f2c4ee4b002f5b011bf00/t/536bdcefe4b03580f8f6bb16/1399577848961/hbosiliconvalleypiedpiperoldlogo'
+  iconURL: 'http://static.squarespace.com/static/531f2c4ee4b002f5b011bf00/t/536bdcefe4b03580f8f6bb16/1399577848961/hbosiliconvalleypiedpiperoldlogo'
 };
 
 lab.beforeEach((done) => {
@@ -61,10 +60,10 @@ lab.test('does not post when tags do not match ', (done) => {
   server.log(['asdf', 'asdf'], 'this should not be posted to the channel');
 });
 lab.test('lets you call the post method manually', (done) => {
-  server.postMessageToSlack(['test', 'postMessageToSlack'], 'this is a test of server.postMessageToSlack. ');
+  server.slackPostMessage(['test', 'slackPostMessage'], 'this is a test of server.slackPostMessage. ');
 });
 lab.test('lets you call the raw post method manually', (done) => {
-  server.postRawDataToSlack({ text: 'this is a test of server.postRawDataToSlack .' });
+  server.slackPostRawMessage({ text: 'this is a test of server.slackPostRawMessage .' });
 });
 lab.test('will not process tags that have "hapi-slack"', (done) => {
   server.log(['hapi-slack', 'error'], 'this should not be posted to the channel');
@@ -82,7 +81,7 @@ lab.test('will not process tags when noTags option is true', (done) => {
     });
   });
 });
-lab.test('will user a supplied username', (done) => {
+lab.test('will use a supplied username', (done) => {
   server.stop( () => {
     delete options.noTags;
     options.username = "Jared";
