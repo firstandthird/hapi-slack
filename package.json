@@ -4,7 +4,7 @@
   "description": "plugin to forward hapi server logs to a slack channel",
   "main": "index.js",
   "scripts": {
-    "test": "lab -t 100 -e test",
+    "test": "lab -e test",
     "lint": "eslint ."
   },
   "repository": {
