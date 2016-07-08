@@ -34,6 +34,9 @@ exports.register = (server, config, next) => {
         attachment.title = data.message;
         delete data.message;
       }
+      if (data.url) {
+        attachment.title_link = data.url;
+      }
       attachment.text = `\`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``;
       attachment.mrkdwn_in = ['text'];
     }
