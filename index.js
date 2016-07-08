@@ -20,51 +20,46 @@ exports.register = (server, config, next) => {
 
   // used by slackPostMessage to construct a nice payload:
   const makeSlackPayload = (tags, data) => {
-    let tagString = `[${tags}]`;
-    if (config.noTags) {
-      tagString = '';
-    }
-    let slackPayload = {};
-    if (_.isString(data)) {
-      slackPayload = {
-        attachments: [{
-          text: `${data} ${tagString} `
-        }]
-      };
-    } else if (_.isObject(data)) {
-      // if it's a json object then format it so
-      // it displays all nicely on slack:
-      if (!data.message) {
-          // slack uses ``` to format text like an object:
-        slackPayload = {
-          attachments: [{
-            text: ` ${tagString} \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-            mrkdwn_in: ['text']
-          }]
-        };
-      // if it's a json object that has a 'message' field then pull that out:
-      } else {
-        const message = data.message;
+    //clone because we muck with data
+    data = _.cloneDeep(data);
+    const attachment = {
+      fields: []
+    };
+
+    if (_.isString(data)) { //if string just pass as title and be done with it
+      attachment.title = data;
+    } else if (_.isObject(data)) { // if object, then lets make it look good
+      //if it has a message, pull that out and display as title
+      if (data.message) {
+        attachment.title = data.message;
         delete data.message;
-        slackPayload = {
-          attachments: [{
-            text: `${message} ${tagString} \`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``,
-            mrkdwn_in: ['text']
-          }]
-        };
       }
+      if (data.url) {
+        attachment.title_link = data.url;
+      }
+      attachment.text = `\`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``;
+      attachment.mrkdwn_in = ['text'];
+    }
+    if (config.additionalFields) {
+      attachment.fields = attachment.fields.concat(config.additionalFields);
+    }
+    if (config.hideTags !== true) {
+      attachment.fields.push({ title: 'Tags', value: tags.join(', ') });
     }
     // set any colors for special tags:
     if (tags.indexOf('success') > -1) {
-      slackPayload.attachments[0].color = 'good';
+      attachment.color = 'good';
     }
     if (tags.indexOf('warning') > -1) {
-      slackPayload.attachments[0].color = 'warning';
+      attachment.color = 'warning';
     }
     if (tags.indexOf('error') > -1) {
-      slackPayload.attachments[0].color = 'danger';
+      attachment.color = 'danger';
     }
     // set any special channel:
+    const slackPayload = {
+      attachments: [attachment]
+    };
     if (config.channel) {
       slackPayload.channel = config.channel;
     }
@@ -82,11 +77,11 @@ exports.register = (server, config, next) => {
     let slackPayload;
     // when called directly, tags is just an array:
     if (_.isArray(tags)) {
-      slackPayload = makeSlackPayload(_.union(tags, config.additionalTags).join(', '), data);
+      slackPayload = makeSlackPayload(_.union(tags, config.additionalTags), data);
     // when called as an event on server.log, tags will be an object
     // // in which they keys are the tag names:
     } else if (_.isObject(tags)) {
-      slackPayload = makeSlackPayload(_.union(_.keys(tags), config.additionalTags).join(', '), data);
+      slackPayload = makeSlackPayload(_.union(_.keys(tags), config.additionalTags), data);
     }
     slackPostRawMessage(slackPayload);
   };
