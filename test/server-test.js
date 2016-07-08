@@ -23,7 +23,10 @@ const options = {
   // you can specify tags that will automatically be appended to each post to slack:
   additionalTags: ['server-test.js', 'someAdditionalTag'],
   internalErrors: true,
-  iconURL: 'http://static.squarespace.com/static/531f2c4ee4b002f5b011bf00/t/536bdcefe4b03580f8f6bb16/1399577848961/hbosiliconvalleypiedpiperoldlogo'
+  iconURL: 'http://static.squarespace.com/static/531f2c4ee4b002f5b011bf00/t/536bdcefe4b03580f8f6bb16/1399577848961/hbosiliconvalleypiedpiperoldlogo',
+  additionalFields: [
+    { title: 'test 1', value: 'blah' }
+  ]
 };
 lab.beforeEach((done) => {
   server = new Hapi.Server({});
