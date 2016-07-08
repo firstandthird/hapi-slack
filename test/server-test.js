@@ -50,7 +50,7 @@ lab.test('posts to test slack channel ', (done) => {
     path: '/testSlack/',
     handler: (request, response) => {
       code.expect(request.payload.attachments.length).to.equal(1);
-      code.expect(request.payload.attachments[0].text).to.equal('this is a simple test post from hapi-slack. [test, server-test.js, someAdditionalTag] ');
+      code.expect(request.payload.attachments[0].title).to.equal('this is a simple test post from hapi-slack.');
       code.expect(request.payload.channel).to.equal('#hapi-slack-test');
       response('good');
       done();
@@ -60,7 +60,6 @@ lab.test('posts to test slack channel ', (done) => {
     server.log(['test'], 'this is a simple test post from hapi-slack.');
   });
 });
-
 lab.test('posts to test slack channel with color ', (done) => {
   server.route({
     method: 'POST',
@@ -138,7 +137,7 @@ lab.test('lets you post an object with a special "message" field', (done) => {
     method: 'POST',
     path: '/testSlack/',
     handler: (request, response) => {
-      code.expect(request.payload.attachments[0].text).to.include('this is the message');
+      code.expect(request.payload.attachments[0].title).to.include('this is the message');
       response('good');
       done();
     }
@@ -169,8 +168,7 @@ lab.test('lets you call the post method manually', (done) => {
     method: 'POST',
     path: '/testSlack/',
     handler: (request, response) => {
-      // code.expect(request.payload.attachments[0].text).to.equal('this is a test of server.slackPostMessage. ');
-      code.expect(request.payload.attachments[0].text).to.equal('this is a test of server.slackPostMessage.  [test, slackPostMessage, server-test.js, someAdditionalTag] ');
+      code.expect(request.payload.attachments[0].title).to.equal('this is a test of server.slackPostMessage. ');
       response('good');
       done();
     }
@@ -223,8 +221,8 @@ lab.test('will not process tags when noTags option is true', (done) => {
         method: 'POST',
         path: '/testSlack/',
         handler: (request, response) => {
-          code.expect(request.payload.attachments[0].text).to.not.include('[');
-          code.expect(request.payload.attachments[0].text).to.not.include(']');
+          code.expect(request.payload.attachments[0].title).to.not.include('[');
+          code.expect(request.payload.attachments[0].title).to.not.include(']');
           response('good');
           done();
         }
@@ -273,7 +271,7 @@ lab.test('internalErrors will return an appropriate error ', (done) => {
     path: '/testSlack/',
     handler: (request, response) => {
       code.expect(request.payload.attachments[0].color).to.equal('danger');
-      code.expect(request.payload.attachments[0].text).to.include('thisShouldGenerateAnInteralErrorOnSlack');
+      code.expect(request.payload.attachments[0].title).to.include('thisShouldGenerateAnInteralErrorOnSlack');
       response('good');
       done();
     }
