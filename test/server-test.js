@@ -44,7 +44,7 @@ lab.afterEach((done) => {
     done();
   });
 });
-lab.test('posts to test slack channel ', (done) => {
+lab.test('posts when tags do match', (done) => {
   server.route({
     method: 'POST',
     path: '/testSlack/',
@@ -58,92 +58,6 @@ lab.test('posts to test slack channel ', (done) => {
   });
   server.start(() => {
     server.log(['test'], 'this is a simple test post from hapi-slack.');
-  });
-});
-lab.test('posts to test slack channel with color ', (done) => {
-  server.route({
-    method: 'POST',
-    path: '/testSlack/',
-    handler: (request, response) => {
-      code.expect(request.payload.attachments[0].color).to.equal('danger');
-      response('good');
-      done();
-    }
-  });
-  server.start(() => {
-    server.log(['error', 'test'], 'this is a simple test post from hapi-slack that should have red next to it.');
-  });
-});
-lab.test('lets you post an object as the message', (done) => {
-  server.route({
-    method: 'POST',
-    path: '/testSlack/',
-    handler: (request, response) => {
-      code.expect(request.payload.attachments[0].mrkdwn_in.length).to.equal(1);
-      code.expect(request.payload.attachments[0].mrkdwn_in[0]).to.equal('text');
-      response('good');
-      done();
-    }
-  });
-  server.start(() => {
-    server.log(['test'], { data: 'this is an object' });
-  });
-});
-lab.test('warning tags will have a yellow swatch', (done) => {
-  server.route({
-    method: 'POST',
-    path: '/testSlack/',
-    handler: (request, response) => {
-      code.expect(request.payload.attachments[0].color).to.equal('warning');
-      response('good');
-      done();
-    }
-  });
-  server.start(() => {
-    server.log(['warning'], { data: 'this is a warning object, should have yellow next to it' });
-  });
-});
-lab.test('error tags will have a red swatch', (done) => {
-  server.route({
-    method: 'POST',
-    path: '/testSlack/',
-    handler: (request, response) => {
-      code.expect(request.payload.attachments[0].color).to.equal('danger');
-      response('good');
-      done();
-    }
-  });
-  server.start(() => {
-    server.log(['error'], { data: 'this is an error object, should have red next to it' });
-  });
-});
-
-lab.test('success tags will have a green swatch', (done) => {
-  server.route({
-    method: 'POST',
-    path: '/testSlack/',
-    handler: (request, response) => {
-      code.expect(request.payload.attachments[0].color).to.equal('good');
-      response('good');
-      done();
-    }
-  });
-  server.start(() => {
-    server.log(['success'], { data: 'this is an success object, should have green next to it' });
-  });
-});
-lab.test('lets you post an object with a special "message" field', (done) => {
-  server.route({
-    method: 'POST',
-    path: '/testSlack/',
-    handler: (request, response) => {
-      code.expect(request.payload.attachments[0].title).to.include('this is the message');
-      response('good');
-      done();
-    }
-  });
-  server.start(() => {
-    server.log(['error'], { message: 'this is the message that was pulled out of the object below', data: 'this is an object and should be formatted' });
   });
 });
 lab.test('does not post when tags do not match ', (done) => {
@@ -229,31 +143,6 @@ lab.test('will not process tags when noTags option is true', (done) => {
       });
       server.start(() => {
         server.log(['warning', 'error'], 'this should be posted without tags to the channel');
-      });
-    });
-  });
-});
-lab.test('will use a supplied username', (done) => {
-  server.stop(() => {
-    delete options.noTags;
-    options.username = 'Jared';
-    server = new Hapi.Server({});
-    server.connection({ port: 8080 });
-    server.register({
-      register: hapiSlack,
-      options
-    }, () => {
-      server.route({
-        method: 'POST',
-        path: '/testSlack/',
-        handler: (request, response) => {
-          code.expect(request.payload.username).to.equal('Jared');
-          response('good');
-          done();
-        }
-      });
-      server.start(() => {
-        server.log(['warning', 'error'], 'this should be posted with the username Jared');
       });
     });
   });

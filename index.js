@@ -105,6 +105,7 @@ exports.register = (server, config, next) => {
     });
   }
   // both methods are available for you to manually call:
+  server.decorate('server', 'makeSlackPayload', makeSlackPayload);
   server.decorate('server', 'slackPostMessage', slackPostMessage);
   server.decorate('server', 'slackPostRawMessage', slackPostRawMessage);
   next();
