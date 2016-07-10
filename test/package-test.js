@@ -4,6 +4,8 @@ const Hapi = require('hapi');
 const lab = exports.lab = require('lab').script();
 const code = exports.code = require('code');
 const hapiSlack = require('../');
+const _ = require('lodash');
+
 let server;
 
 lab.afterEach((done) => {
@@ -12,6 +14,15 @@ lab.afterEach((done) => {
   });
 });
 lab.test('converts a basic message passed as string ', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      title: 'a string',
+      fields: [{
+        title: 'Tags',
+        value: 'test'
+      }]
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -21,14 +32,21 @@ lab.test('converts a basic message passed as string ', (done) => {
     const packetString = server.makeSlackPayload(['test'], 'a string');
     code.expect(typeof packetString).to.equal('string');
     const packet = JSON.parse(packetString);
-    code.expect(packet.attachments.length).to.equal(1);
-    code.expect(packet.attachments[0].fields.length).to.equal(1);
-    code.expect(packet.attachments[0].title).to.equal('a string');
-    code.expect(packet.attachments[0].fields[0].title).to.equal('Tags');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('lets you post an object as the message', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      text: '``` {\n  "data": "this is an object"\n} ```',
+      mrkdwn_in: ['text'],
+      fields: [{
+        title: 'Tags',
+        value: ''
+      }]
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -38,12 +56,21 @@ lab.test('lets you post an object as the message', (done) => {
     const packet = JSON.parse(server.makeSlackPayload([], {
       data: 'this is an object'
     }));
-    code.expect(packet.attachments[0].mrkdwn_in[0]).to.equal('text');
-    code.expect(packet.attachments[0].text).to.equal('``` {\n  "data": "this is an object"\n} ```');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('"error" tag will set the "danger" color option', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      color: 'danger',
+      title: 'some text',
+      fields: [{
+        title: 'Tags',
+        value: 'error'
+      }]
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -51,11 +78,21 @@ lab.test('"error" tag will set the "danger" color option', (done) => {
     options: {}
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload(['error'], 'some text'));
-    code.expect(packet.attachments[0].color).to.equal('danger');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('warning tags will have a yellow swatch', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      color: 'warning',
+      title: 'test msg',
+      fields: [{
+        title: 'Tags',
+        value: 'warning'
+      }]
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -63,11 +100,21 @@ lab.test('warning tags will have a yellow swatch', (done) => {
     options: {}
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload(['warning'], 'test msg'));
-    code.expect(packet.attachments[0].color).to.equal('warning');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('"success" tags will have a "good" color', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      color: 'good',
+      title: 'a string',
+      fields: [{
+        title: 'Tags',
+        value: 'success'
+      }]
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -75,11 +122,22 @@ lab.test('"success" tags will have a "good" color', (done) => {
     options: {}
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload(['success'], 'a string'));
-    code.expect(packet.attachments[0].color).to.equal('good');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('lets you post an object with a special "message" field', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      title: 'this is the message that was pulled out of the object below',
+      text: '``` {\n  "data": "this is an object and should be formatted"\n} ```',
+      mrkdwn_in: ['text'],
+      fields: [{
+        title: 'Tags',
+        value: ''
+      }]
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -90,11 +148,73 @@ lab.test('lets you post an object with a special "message" field', (done) => {
       message: 'this is the message that was pulled out of the object below',
       data: 'this is an object and should be formatted'
     }));
-    code.expect(packet.attachments[0].title).to.include('this is the message');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
+    done();
+  });
+});
+lab.test('lets you post an object without a "message" field', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      text: '``` {\n  "data": "this is an object and should be formatted"\n} ```',
+      mrkdwn_in: ['text'],
+      fields: [{
+        title: 'Tags',
+        value: ''
+      }]
+    }],
+  };
+  server = new Hapi.Server({});
+  server.connection({ port: 8080 });
+  server.register({
+    register: hapiSlack,
+    options: {}
+  }, () => {
+    const packet = JSON.parse(server.makeSlackPayload([], {
+      data: 'this is an object and should be formatted'
+    }));
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
+    done();
+  });
+});
+lab.test('lets you set the title_link with a url field', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      fields: [{
+        title: 'Tags',
+        value: ''
+      }],
+      title: 'this is the message that was pulled out of the object below',
+      title_link: 'http://example.com',
+      text: '``` {\n  "data": "this is an object and should be formatted"\n} ```',
+      mrkdwn_in: ['text'],
+    }],
+  };
+  server = new Hapi.Server({});
+  server.connection({ port: 8080 });
+  server.register({
+    register: hapiSlack,
+    options: {}
+  }, () => {
+    const packet = JSON.parse(server.makeSlackPayload([], {
+      message: 'this is the message that was pulled out of the object below',
+      data: 'this is an object and should be formatted',
+      url: 'http://example.com'
+    }));
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('will use a supplied username', (done) => {
+  const expectedPacket = {
+    username: 'Jared',
+    attachments: [{
+      title: 'a string',
+      fields: [{
+        title: 'Tags',
+        value: ''
+      }]
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -104,11 +224,21 @@ lab.test('will use a supplied username', (done) => {
     }
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload([], 'a string'));
-    code.expect(packet.username).to.equal('Jared');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('will put a link in the title', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      fields: [
+        { title: 'hi', value: 'there' },
+        { title: 'go', value: 'away' },
+        { title: 'Tags', value: '' }
+      ],
+      title: 'hi there'
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -121,14 +251,17 @@ lab.test('will put a link in the title', (done) => {
     }
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload([], 'hi there'));
-    code.expect(packet.attachments[0].fields.length).to.equal(3);
-    code.expect(packet.attachments[0].fields[0].title).to.equal('hi');
-    code.expect(packet.attachments[0].fields[1].title).to.equal('go');
-    code.expect(packet.attachments[0].fields[2].title).to.equal('Tags');
+    code.expect(_.isEqual(packet.attachments[0], expectedPacket.attachments[0])).to.equal(true);
     done();
   });
 });
 lab.test('will hide tags when indicated', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      title: 'hi there',
+      fields: []
+    }],
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -138,11 +271,21 @@ lab.test('will hide tags when indicated', (done) => {
     }
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload(['tags', 'more tags'], 'hi there'));
-    code.expect(packet.attachments[0].fields.length).to.equal(0);
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('will post to a specific channel', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      title: 'a message',
+      fields: [{
+        title: 'Tags',
+        value: ''
+      }]
+    }],
+    channel: 'MTV'
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -152,11 +295,21 @@ lab.test('will post to a specific channel', (done) => {
     }
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload([], 'a message'));
-    code.expect(packet.channel).to.equal('MTV');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });
 lab.test('will post with a provided icon URL', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      title: 'a string',
+      fields: [{
+        title: 'Tags',
+        value: ''
+      }]
+    }],
+    icon_url: 'http://image.com'
+  };
   server = new Hapi.Server({});
   server.connection({ port: 8080 });
   server.register({
@@ -166,7 +319,7 @@ lab.test('will post with a provided icon URL', (done) => {
     }
   }, () => {
     const packet = JSON.parse(server.makeSlackPayload([], 'a string'));
-    code.expect(packet.icon_url).to.equal('http://image.com');
+    code.expect(_.isEqual(packet, expectedPacket)).to.equal(true);
     done();
   });
 });

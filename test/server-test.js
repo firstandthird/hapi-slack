@@ -173,3 +173,19 @@ lab.test('internalErrors will return an appropriate error ', (done) => {
     });
   });
 });
+lab.test('lets you call the post method manually with an object for tags', (done) => {
+  server.route({
+    method: 'POST',
+    path: '/testSlack/',
+    handler: (request, response) => {
+      code.expect(request.payload.attachments[0].title).to.equal('this is a message');
+      response('good');
+      done();
+    }
+  });
+  server.start(() => {
+    server.slackPostMessage({
+      sampleTag: 'thing'
+    }, 'this is a message');
+  });
+});
