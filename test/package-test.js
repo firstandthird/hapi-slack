@@ -24,7 +24,7 @@ lab.test('converts a basic message passed as string ', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -48,7 +48,7 @@ lab.test('lets you post an object as the message', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -72,7 +72,7 @@ lab.test('"error" tag will set the "danger" color option', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -94,7 +94,7 @@ lab.test('warning tags will have a yellow swatch', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -116,7 +116,7 @@ lab.test('"success" tags will have a "good" color', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -139,7 +139,7 @@ lab.test('lets you post an object with a special "message" field', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -164,7 +164,7 @@ lab.test('lets you post an object without a "message" field', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -190,7 +190,7 @@ lab.test('lets you set the title_link with a url field', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {}
@@ -216,7 +216,7 @@ lab.test('will use a supplied username', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {
@@ -228,7 +228,7 @@ lab.test('will use a supplied username', (done) => {
     done();
   });
 });
-lab.test('will put a link in the title', (done) => {
+lab.test('will let you specify additional fields in options', (done) => {
   const expectedPacket = {
     attachments: [{
       fields: [
@@ -240,7 +240,7 @@ lab.test('will put a link in the title', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {
@@ -263,7 +263,7 @@ lab.test('will hide tags when indicated', (done) => {
     }],
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {
@@ -287,7 +287,7 @@ lab.test('will post to a specific channel', (done) => {
     channel: 'MTV'
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {
@@ -311,7 +311,7 @@ lab.test('will post with a provided icon URL', (done) => {
     icon_url: 'http://image.com'
   };
   server = new Hapi.Server({});
-  server.connection({ port: 8080 });
+  server.connection({ });
   server.register({
     register: hapiSlack,
     options: {
