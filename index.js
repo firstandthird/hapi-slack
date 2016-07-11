@@ -28,10 +28,12 @@ exports.register = (server, config, next) => {
 
     if (_.isString(data)) { //if string just pass as title and be done with it
       attachment.title = data;
+      attachment.fallback = data;
     } else if (_.isObject(data)) { // if object, then lets make it look good
       //if it has a message, pull that out and display as title
       if (data.message) {
         attachment.title = data.message;
+        attachment.fallback = data.message;
         delete data.message;
       }
       if (data.url) {
