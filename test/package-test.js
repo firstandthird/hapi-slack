@@ -16,6 +16,7 @@ lab.afterEach((done) => {
 lab.test('converts a basic message passed as string ', (done) => {
   const expectedPacket = {
     attachments: [{
+      fallback: 'a string',
       title: 'a string',
       fields: [{
         title: 'Tags',
@@ -62,6 +63,7 @@ lab.test('"error" tag will set the "danger" color option', (done) => {
     attachments: [{
       color: 'danger',
       title: 'some text',
+      fallback: 'some text',
       fields: [{
         title: 'Tags',
         value: 'error'
@@ -84,6 +86,7 @@ lab.test('warning tags will have a yellow swatch', (done) => {
     attachments: [{
       color: 'warning',
       title: 'test msg',
+      fallback: 'test msg',
       fields: [{
         title: 'Tags',
         value: 'warning'
@@ -106,6 +109,7 @@ lab.test('"success" tags will have a "good" color', (done) => {
     attachments: [{
       color: 'good',
       title: 'a string',
+      fallback: 'a string',
       fields: [{
         title: 'Tags',
         value: 'success'
@@ -127,6 +131,7 @@ lab.test('lets you post an object with a special "message" field', (done) => {
   const expectedPacket = {
     attachments: [{
       title: 'this is the message that was pulled out of the object below',
+      fallback: 'this is the message that was pulled out of the object below',
       text: '``` {\n  "data": "this is an object and should be formatted"\n} ```',
       mrkdwn_in: ['text'],
       fields: []
@@ -172,6 +177,7 @@ lab.test('lets you set the title_link with a url field', (done) => {
     attachments: [{
       fields: [],
       title: 'this is the message that was pulled out of the object below',
+      fallback: 'this is the message that was pulled out of the object below',
       title_link: 'http://example.com',
       text: '``` {\n  "data": "this is an object and should be formatted"\n} ```',
       mrkdwn_in: ['text'],
@@ -197,6 +203,7 @@ lab.test('will use a supplied username', (done) => {
     username: 'Jared',
     attachments: [{
       title: 'a string',
+      fallback: 'a string',
       fields: []
     }],
   };
@@ -220,6 +227,7 @@ lab.test('will let you specify additional fields in options', (done) => {
         { title: 'hi', value: 'there' },
         { title: 'go', value: 'away' }
       ],
+      fallback: 'hi there',
       title: 'hi there'
     }],
   };
@@ -243,6 +251,7 @@ lab.test('will hide tags when indicated', (done) => {
   const expectedPacket = {
     attachments: [{
       title: 'hi there',
+      fallback: 'hi there',
       fields: []
     }],
   };
@@ -263,6 +272,7 @@ lab.test('will post to a specific channel', (done) => {
   const expectedPacket = {
     attachments: [{
       title: 'a message',
+      fallback: 'a message',
       fields: []
     }],
     channel: 'MTV'
@@ -284,6 +294,7 @@ lab.test('will post with a provided icon URL', (done) => {
   const expectedPacket = {
     attachments: [{
       title: 'a string',
+      fallback: 'a string',
       fields: []
     }],
     icon_url: 'http://image.com'
