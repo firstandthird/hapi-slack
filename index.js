@@ -44,7 +44,7 @@ exports.register = (server, config, next) => {
     if (config.additionalFields) {
       attachment.fields = attachment.fields.concat(config.additionalFields);
     }
-    if (config.hideTags !== true) {
+    if (config.hideTags !== true && tags.length > 0) {
       attachment.fields.push({ title: 'Tags', value: tags.join(', ') });
     }
     // set any colors for special tags:
