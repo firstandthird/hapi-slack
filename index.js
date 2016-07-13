@@ -38,6 +38,7 @@ exports.register = (server, config, next) => {
       }
       if (data.url) {
         attachment.title_link = data.url;
+        delete data.url;
       }
       attachment.text = `\`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``;
       attachment.mrkdwn_in = ['text'];
@@ -45,7 +46,7 @@ exports.register = (server, config, next) => {
     if (config.additionalFields) {
       attachment.fields = attachment.fields.concat(config.additionalFields);
     }
-    if (config.hideTags !== true) {
+    if (config.hideTags !== true && tags.length > 0) {
       attachment.fields.push({ title: 'Tags', value: tags.join(', ') });
     }
     // set any colors for special tags:
@@ -107,6 +108,7 @@ exports.register = (server, config, next) => {
     });
   }
   // both methods are available for you to manually call:
+  server.decorate('server', 'makeSlackPayload', makeSlackPayload);
   server.decorate('server', 'slackPostMessage', slackPostMessage);
   server.decorate('server', 'slackPostRawMessage', slackPostRawMessage);
   next();
