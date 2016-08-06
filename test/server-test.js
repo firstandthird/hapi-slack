@@ -14,7 +14,9 @@ const options = {
   // you can list which tags will cause a server.log call to post to slack:
   tags: ['warning', 'error', 'success', 'test'],
   // you can specify tags that will automatically be appended to each post to slack:
-  additionalTags: ['server-test.js', 'someAdditionalTag']
+  additionalTags: ['server-test.js', 'someAdditionalTag'],
+  // will log hapi internal errors
+  internalError: true
 };
 
 lab.beforeEach((done) => {
@@ -54,6 +56,7 @@ lab.test('success tags will have a green swatch', (done) => {
 lab.test('lets you post an object with a special "message" field', (done) => {
   server.log(['error'], { message: 'this is the message that was pulled out of the object below', data: 'this is an object and should be formatted' });
 });
+
 lab.test('does not post when tags do not match ', (done) => {
 server.log(['asdf', 'asdf'], 'this should not be posted to the channel');
 });
@@ -66,4 +69,16 @@ lab.test('lets you call the raw post method manually', (done) => {
 
 lab.test('will not process tags that have "hapi-slack"', (done) => {
   server.log(['hapi-slack', 'error'], 'this should not be posted to the channel');
+});
+lab.test('internalError config option will log on internal hapi errors', (done) => {
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: (request, reply) => {
+      request.log(['error'], { message: 'this is the message that was pulled out of the object below', data: 'this is an object and should be formatted' });
+    }
+  });
+  server.inject('/', () => {
+    done();
+  });
 });
