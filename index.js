@@ -2,15 +2,23 @@
 const _ = require('lodash');
 const Logr = require('logr');
 exports.register = (server, config, next) => {
+  config.methods = {};
+  // expose logr-slack calls directly as server methods:
+  // todo: why this no work for server.slackPostMessage????
+  server.expose('slackPostMessage', (tags, data) => {
+    config.methods.slackPostMessage(tags, data);
+  });
+  server.expose('slackPostRawMessage', (tags, data) => {
+    config.methods.slackPostRawMessage(tags, data);
+  });
+  // set up logr-slack:
   const log = new Logr({
     type: 'slack',
     plugins: {
       slack: 'logr-slack'
     },
     renderOptions: {
-      slack: {
-        server
-      }
+      slack: config
     }
   });
   // event that fires whenever server.log is called:
@@ -22,8 +30,7 @@ exports.register = (server, config, next) => {
         return;
       }
       if (_.intersection(_.keys(tags), config.tags).length > 0) {
-        log(_.union(config.additionalTags, tags), event.data);
-        // postMessageToSlack(tags, event.data);
+        log(tags, event.data);
       }
       // optional event that fires whenever server throws internal error:
       if (config.internalError) {
@@ -34,7 +41,7 @@ exports.register = (server, config, next) => {
             return;
           }
           if (_.intersection(_.keys(tags), config.tags).length > 0) {
-            log(_.union(config.additionalTags, tags), event.data);
+            log(tags, event.data);
           }
           console.log(tags, event.data);
         });

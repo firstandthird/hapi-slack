@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "lodash": "^4.13.1",
+    "logr": "^1.11.0",
     "wreck": "^7.2.1"
   }
 }
