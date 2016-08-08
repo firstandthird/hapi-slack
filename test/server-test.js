@@ -91,8 +91,6 @@ lab.test('lets you call the post method manually', (done) => {
     server.slackPostMessage(['test', 'slackPostMessage'], 'this is a test of server.slackPostMessage. ');
   });
 });
-/*
-
 lab.test('lets you call the raw post method manually', (done) => {
   server.route({
     method: 'POST',
@@ -149,6 +147,7 @@ lab.test('will not process tags when noTags option is true', (done) => {
     });
   });
 });
+/*
 lab.test('internalErrors will return an appropriate error ', (done) => {
   server.route({
     path: '/',
@@ -175,6 +174,7 @@ lab.test('internalErrors will return an appropriate error ', (done) => {
     });
   });
 });
+*/
 lab.test('lets you call the post method manually with an object for tags', (done) => {
   server.route({
     method: 'POST',
@@ -191,4 +191,3 @@ lab.test('lets you call the post method manually with an object for tags', (done
     }, 'this is a message');
   });
 });
-*/
