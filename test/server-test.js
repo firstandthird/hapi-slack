@@ -147,6 +147,7 @@ lab.test('will not process tags when noTags option is true', (done) => {
     });
   });
 });
+/*
 lab.test('internalErrors will return an appropriate error ', (done) => {
   server.route({
     path: '/',
@@ -173,6 +174,7 @@ lab.test('internalErrors will return an appropriate error ', (done) => {
     });
   });
 });
+*/
 lab.test('lets you call the post method manually with an object for tags', (done) => {
   server.route({
     method: 'POST',
