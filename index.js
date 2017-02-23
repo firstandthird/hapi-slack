@@ -1,13 +1,12 @@
 'use strict';
 const _ = require('lodash');
-const post2slack = require('post2slack');
 
 exports.register = (server, config, next) => {
   // set config on post2slack:
-  post2slack.config = config;
+  const post2slack = require('post2slack')(config);
   // sends a payload string to slack:
   const slackPostRawMessage = (slackPayload) => {
-    post2slack.post(config.slackHook, slackPayload, (err) => {
+    post2slack.post(slackPayload, (err) => {
       if (err) {
         server.log(['hapi-slack'], err);
       }
@@ -15,6 +14,15 @@ exports.register = (server, config, next) => {
   };
 
   const slackPostMessage = (tags, message) => {
+    if (!Array.isArray(tags)) {
+      const tagsToPass = [];
+      Object.keys(tags).forEach((tag) => {
+        if (tags[tag]) {
+          tagsToPass.push(tag);
+        }
+      });
+      tags = tagsToPass;
+    }
     post2slack.postFormatted(tags, message, (err) => {
       if (err) {
         server.log(['hapi-slack'], err);
@@ -41,7 +49,7 @@ exports.register = (server, config, next) => {
     });
   }
   // both methods are available for you to manually call:
-  // server.decorate('server', 'makeSlackPayload', makeSlackPayload);
+  server.decorate('server', 'makeSlackPayload', post2slack.makeSlackPayload);
   server.decorate('server', 'slackPostMessage', slackPostMessage);
   server.decorate('server', 'slackPostRawMessage', slackPostRawMessage);
   next();

@@ -61,7 +61,6 @@ lab.test('posts when tags do match', (done) => {
     server.log(['test'], 'this is a simple test post from hapi-slack.');
   });
 });
-/*
 lab.test('does not post when tags do not match ', (done) => {
   server.route({
     method: 'POST',
@@ -79,6 +78,7 @@ lab.test('does not post when tags do not match ', (done) => {
     done();
   }, 1000);
 });
+
 lab.test('lets you call the post method manually', (done) => {
   server.route({
     method: 'POST',
@@ -151,6 +151,7 @@ lab.test('will not process tags when noTags option is true', (done) => {
     });
   });
 });
+
 lab.test('internalErrors will return an appropriate error ', (done) => {
   server.route({
     path: '/',
@@ -193,4 +194,3 @@ lab.test('lets you call the post method manually with an object for tags', (done
     }, 'this is a message');
   });
 });
-*/
