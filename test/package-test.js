@@ -13,6 +13,7 @@ lab.afterEach((done) => {
     done();
   });
 });
+/*
 lab.test('converts a basic message passed as string ', (done) => {
   const expectedPacket = {
     attachments: [{
@@ -37,6 +38,7 @@ lab.test('converts a basic message passed as string ', (done) => {
     done();
   });
 });
+
 lab.test('lets you post an object as the message', (done) => {
   const expectedPacket = {
     attachments: [{
@@ -312,3 +314,4 @@ lab.test('will post with a provided icon URL', (done) => {
     done();
   });
 });
+*/

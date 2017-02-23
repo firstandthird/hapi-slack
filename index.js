@@ -1,92 +1,25 @@
 'use strict';
 const _ = require('lodash');
-const Wreck = require('wreck');
+const post2slack = require('post2slack');
 
 exports.register = (server, config, next) => {
+  // set config on post2slack:
+  post2slack.config = config;
   // sends a payload string to slack:
   const slackPostRawMessage = (slackPayload) => {
-    if (_.isObject(slackPayload)) {
-      slackPayload = JSON.stringify(slackPayload);
-    }
-    Wreck.request('POST', config.slackHook, {
-      headers: { 'Content-type': 'application/json' },
-      payload: slackPayload
-    }, (err) => {
+    post2slack.post(config.slackHook, slackPayload, (err) => {
       if (err) {
         server.log(['hapi-slack'], err);
       }
     });
   };
 
-  // used by slackPostMessage to construct a nice payload:
-  const makeSlackPayload = (tags, data) => {
-    //clone because we muck with data
-    data = _.cloneDeep(data);
-    const attachment = {
-      fields: []
-    };
-
-    if (_.isString(data)) { //if string just pass as title and be done with it
-      attachment.title = data;
-      attachment.fallback = data;
-    } else if (_.isObject(data)) { // if object, then lets make it look good
-      //if it has a message, pull that out and display as title
-      if (data.message) {
-        attachment.title = data.message;
-        attachment.fallback = data.message;
-        delete data.message;
+  const slackPostMessage = (tags, message) => {
+    post2slack.postFormatted(tags, message, (err) => {
+      if (err) {
+        server.log(['hapi-slack'], err);
       }
-      if (data.url) {
-        attachment.title_link = data.url;
-        delete data.url;
-      }
-      attachment.text = `\`\`\` ${JSON.stringify(data, null, '  ')} \`\`\``;
-      attachment.mrkdwn_in = ['text'];
-    }
-    if (config.additionalFields) {
-      attachment.fields = attachment.fields.concat(config.additionalFields);
-    }
-    if (config.hideTags !== true && tags.length > 0) {
-      attachment.fields.push({ title: 'Tags', value: tags.join(', ') });
-    }
-    // set any colors for special tags:
-    if (tags.indexOf('success') > -1) {
-      attachment.color = 'good';
-    }
-    if (tags.indexOf('warning') > -1) {
-      attachment.color = 'warning';
-    }
-    if (tags.indexOf('error') > -1) {
-      attachment.color = 'danger';
-    }
-    // set any special channel:
-    const slackPayload = {
-      attachments: [attachment]
-    };
-    if (config.channel) {
-      slackPayload.channel = config.channel;
-    }
-    if (config.iconURL) {
-      slackPayload.icon_url = config.iconURL;
-    }
-    if (config.username) {
-      slackPayload.username = config.username;
-    }
-    return JSON.stringify(slackPayload);
-  };
-
-  // will format and slackPostRawMessage a server.log style message to slack:
-  const slackPostMessage = (tags, data) => {
-    let slackPayload;
-    // when called directly, tags is just an array:
-    if (_.isArray(tags)) {
-      slackPayload = makeSlackPayload(_.union(tags, config.additionalTags), data);
-    // when called as an event on server.log, tags will be an object
-    // // in which they keys are the tag names:
-    } else if (_.isObject(tags)) {
-      slackPayload = makeSlackPayload(_.union(_.keys(tags), config.additionalTags), data);
-    }
-    slackPostRawMessage(slackPayload);
+    });
   };
 
   // event that fires whenever server.log is called:
@@ -108,7 +41,7 @@ exports.register = (server, config, next) => {
     });
   }
   // both methods are available for you to manually call:
-  server.decorate('server', 'makeSlackPayload', makeSlackPayload);
+  // server.decorate('server', 'makeSlackPayload', makeSlackPayload);
   server.decorate('server', 'slackPostMessage', slackPostMessage);
   server.decorate('server', 'slackPostRawMessage', slackPostRawMessage);
   next();
