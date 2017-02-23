@@ -44,6 +44,7 @@ lab.afterEach((done) => {
     done();
   });
 });
+
 lab.test('posts when tags do match', (done) => {
   server.route({
     method: 'POST',
@@ -77,6 +78,7 @@ lab.test('does not post when tags do not match ', (done) => {
     done();
   }, 1000);
 });
+
 lab.test('lets you call the post method manually', (done) => {
   server.route({
     method: 'POST',
@@ -91,6 +93,7 @@ lab.test('lets you call the post method manually', (done) => {
     server.slackPostMessage(['test', 'slackPostMessage'], 'this is a test of server.slackPostMessage. ');
   });
 });
+
 lab.test('lets you call the raw post method manually', (done) => {
   server.route({
     method: 'POST',
@@ -105,6 +108,7 @@ lab.test('lets you call the raw post method manually', (done) => {
     server.slackPostRawMessage({ text: 'this is a test of server.slackPostRawMessage .' });
   });
 });
+
 lab.test('will not process tags that have "hapi-slack"', (done) => {
   server.route({
     method: 'POST',
@@ -147,6 +151,7 @@ lab.test('will not process tags when noTags option is true', (done) => {
     });
   });
 });
+
 lab.test('internalErrors will return an appropriate error ', (done) => {
   server.route({
     path: '/',
