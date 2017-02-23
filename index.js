@@ -3,7 +3,8 @@ const _ = require('lodash');
 
 exports.register = (server, config, next) => {
   // set config on post2slack:
-  const post2slack = require('post2slack')(config);
+  const Post2Slack = require('post2slack');
+  const post2slack = new Post2Slack(config);
   // sends a payload string to slack:
   const slackPostRawMessage = (slackPayload) => {
     post2slack.post(slackPayload, (err) => {
