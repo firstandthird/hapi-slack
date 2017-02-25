@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "lodash": "^4.13.1",
+    "post2slack": "^1.0.2",
     "wreck": "^7.2.1"
   }
 }
