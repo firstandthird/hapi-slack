@@ -185,7 +185,33 @@ lab.test('lets you call the post method manually with an object for tags', (done
   });
   server.start(() => {
     server.slackPostMessage({
-      sampleTag: 'thing'
+      sampleTag: 'thing',
+      notAdded: false
     }, 'this is a message');
+  });
+});
+
+lab.test('converts a basic message passed as string ', (done) => {
+  const expectedPacket = {
+    attachments: [{
+      fallback: 'a string',
+      title: 'a string',
+      fields: [{
+        title: 'Tags',
+        value: 'test'
+      }]
+    }],
+  };
+  server = new Hapi.Server({});
+  server.connection({ });
+  server.register({
+    register: hapiSlack,
+    options: {}
+  }, () => {
+    const packetString = server.makeSlackPayload(['test'], 'a string');
+    code.expect(typeof packetString).to.equal('string');
+    const packet = JSON.parse(packetString);
+    code.expect(packet).to.equal(expectedPacket);
+    done();
   });
 });

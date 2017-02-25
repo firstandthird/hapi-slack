@@ -16,6 +16,11 @@ exports.register = (server, config, next) => {
       return memo;
     }, []);
   };
+  const handleResponse = (err) => {
+    if (err) {
+      server.log(['hapi-slack', 'error'], err);
+    }
+  };
   // event that fires whenever server.log is called:
   if (config.tags && config.tags.length > 0) {
     server.on('log', (event, tagsAsObject) => {
@@ -25,37 +30,21 @@ exports.register = (server, config, next) => {
         return;
       }
       if (_.intersection(_.keys(tagsAsObject), config.tags).length > 0) {
-        post2slack.postFormatted(getTagsAsArray(tagsAsObject), event.data, (err) => {
-          if (err) {
-            server.log(['hapi-slack', 'error'], err);
-          }
-        });
+        post2slack.postFormatted(getTagsAsArray(tagsAsObject), event.data, handleResponse);
       }
     });
   }
   if (config.internalErrors) {
     server.on('request-error', (request, err) => {
-      post2slack.postFormatted(['internal-error', 'error'], err.toString(), (slackError) => {
-        if (slackError) {
-          server.log(['hapi-slack', 'error'], slackError);
-        }
-      });
+      post2slack.postFormatted(['internal-error', 'error'], err.toString(), handleResponse);
     });
   }
   server.decorate('server', 'makeSlackPayload', post2slack.makeSlackPayload.bind(post2slack));
   server.decorate('server', 'slackPostMessage', (tags, data) => {
-    post2slack.postFormatted(getTagsAsArray(tags), data, (err) => {
-      if (err) {
-        server.log(['hapi-slack', 'error'], err);
-      }
-    });
+    post2slack.postFormatted(getTagsAsArray(tags), data, handleResponse);
   });
   server.decorate('server', 'slackPostRawMessage', (data) => {
-    post2slack.post(data, (err) => {
-      if (err) {
-        server.log(['hapi-slack', 'error'], err);
-      }
-    });
+    post2slack.post(data, handleResponse);
   });
   next();
 };
